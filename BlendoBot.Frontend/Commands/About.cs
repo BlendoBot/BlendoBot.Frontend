@@ -1,30 +1,29 @@
-﻿using BlendoBotLib;
+﻿using BlendoBot.Core.Command;
+using BlendoBot.Core.Entities;
+using BlendoBot.Core.Utility;
 using DSharpPlus.EventArgs;
 using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlendoBot.Commands {
+namespace BlendoBot.Frontend.Commands {
 	/// <summary>
-	/// The about command, which simply prints out the <see cref="CommandProps.Description"/> property of a <see cref="ICommand"/>, or on its own details about the bot.
+	/// The about command, which simply prints out the <see cref="BaseCommand.Description"/> property of a
+	/// <see cref="BaseCommand"/>, or on its own details about the bot.
 	/// </summary>
-	public class About : CommandBase {
+	[Command(Guid = "blendobot.frontend.commands.about", Name = "About", Author = "Biendeo", DefaultTerm = "about")]
+	public class About : BaseCommand {
 		public About(ulong guildId, Program program) : base(guildId, program) {
 			this.program = program;
 		}
 
-		public override string DefaultTerm => "?about";
-		public override string Name => "About";
 		public override string Description => "Posts information about this version of the bot, or of any loaded module. You probably already know how to use this command by now.";
 		public override string Usage => $"Use {Term.Code()} to see the information about the bot.\nUse {$"{Term} [command]".Code()} to see information about another command.";
-		public override string Author => "Biendeo";
-		public override string Version => "1.0.0";
 
 		private readonly Program program;
 
-		public override async Task<bool> Startup() {
-			await Task.Delay(0);
-			return true;
+		public override Task<bool> Startup() {
+			return Task.FromResult(true);
 		}
 
 		public override async Task OnMessage(MessageCreateEventArgs e) {
@@ -43,7 +42,7 @@ namespace BlendoBot.Commands {
 			} else {
 				// This block runs if the ?about is run with an argument. Take the remaining length of the string and
 				// figure out which command uses that. Then print their name, version, author, and description.
-				string specifiedCommand = e.Message.Content.Substring(Term.Length + 1);
+				string specifiedCommand = e.Message.Content[(Term.Length + 1)..];
 				if (!specifiedCommand.StartsWith('?')) {
 					specifiedCommand = $"?{specifiedCommand}";
 				}

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BlendoBot.Commands.Admin {
+namespace BlendoBot.Frontend.Commands.Admin {
 	[JsonObject(MemberSerialization.OptIn)]
 	class DisabledCommand {
 		public DisabledCommand(string term, string className) {

@@ -1,29 +1,27 @@
-﻿using BlendoBotLib;
+﻿using BlendoBot.Core.Command;
+using BlendoBot.Core.Entities;
+using BlendoBot.Core.Utility;
 using DSharpPlus.EventArgs;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace BlendoBot.Commands {
 	/// <summary>
-	/// The help command, which simply prints out the <see cref="CommandProps.Usage"/> property of a <see cref="ICommand"/>, or
+	/// The help command, which simply prints out the <see cref="BaseCommand.Usage"/> property of a
+	/// <see cref="BaseCommand"/>.
 	/// </summary>
-	public class Help : CommandBase {
+	[Command(Guid = "blendobot.frontend.commands.help", Name = "Help", Author = "Biendeo", DefaultTerm = "help")]
+	public class Help : BaseCommand {
 		public Help(ulong guildId, Program program) : base(guildId, program) {
 			this.program = program;
 		}
-
-		public override string DefaultTerm => "?help";
-		public override string Name => "Help";
 		public override string Description => "Posts what commands this bot can do, and additional help on how to use a command.";
 		public override string Usage => $"Use {Term.Code()} to see a list of all commands on the server.\nUse {$"{Term} [command]".Code()} to see help on a specific command, but you probably already know how to do that!";
-		public override string Author => "Biendeo";
-		public override string Version => "1.0.0";
 
 		private readonly Program program;
 
-		public override async Task<bool> Startup() {
-			await Task.Delay(0);
-			return true;
+		public override Task<bool> Startup() {
+			return Task.FromResult(true);
 		}
 
 		public override async Task OnMessage(MessageCreateEventArgs e) {

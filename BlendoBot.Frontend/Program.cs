@@ -1,6 +1,10 @@
 ﻿using BlendoBot.Commands;
-using BlendoBot.Commands.Admin;
-using BlendoBotLib;
+using BlendoBot.Core.Command;
+using BlendoBot.Core.Entities;
+using BlendoBot.Core.Interfaces;
+using BlendoBot.Core.Utility;
+using BlendoBot.Frontend.Commands;
+using BlendoBot.Frontend.Commands.Admin;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
@@ -22,7 +26,7 @@ namespace BlendoBot {
 		public DateTime StartTime { get; private set; }
 
 		private Dictionary<string, Type> LoadedCommands { get; set; }
-		private Dictionary<ulong, Dictionary<string, CommandBase>> GuildCommands { get; set; }
+		private Dictionary<ulong, Dictionary<string, BaseCommand>> GuildCommands { get; set; }
 		private Dictionary<ulong, List<IMessageListener>> GuildMessageListeners { get; set; }
 		private Dictionary<ulong, Dictionary<ulong, List<IReactionListener>>> MessageReactionListeners { get; set; }
 
@@ -38,7 +42,7 @@ namespace BlendoBot {
 		public Program(string configPath) {
 			ConfigPath = configPath;
 			LoadedCommands = new Dictionary<string, Type>();
-			GuildCommands = new Dictionary<ulong, Dictionary<string, CommandBase>>();
+			GuildCommands = new Dictionary<ulong, Dictionary<string, BaseCommand>>();
 			GuildMessageListeners = new Dictionary<ulong, List<IMessageListener>>();
 			MessageReactionListeners = new Dictionary<ulong, Dictionary<ulong, List<IReactionListener>>>();
 			// The rest of the fields will be initialised during the Start operation.
@@ -118,7 +122,7 @@ namespace BlendoBot {
 		/// <param name="guildId"></param>
 		/// <param name="commandTerm"></param>
 		/// <returns></returns>
-		public CommandBase GetCommand(object _, ulong guildId, string commandTerm) {
+		public BaseCommand GetCommand(object _, ulong guildId, string commandTerm) {
 			if (GuildCommands.ContainsKey(guildId)) {
 				if (GuildCommands[guildId].ContainsKey(commandTerm)) {
 					return GuildCommands[guildId][commandTerm];
@@ -132,11 +136,11 @@ namespace BlendoBot {
 			return null;
 		}
 
-		public List<CommandBase> GetCommands(object _, ulong guildId) {
+		public List<BaseCommand> GetCommands(object _, ulong guildId) {
 			if (GuildCommands.ContainsKey(guildId)) {
 				return GuildCommands[guildId].Values.ToList();
 			} else {
-				return new List<CommandBase>();
+				return new List<BaseCommand>();
 			}
 		}
 
@@ -267,7 +271,7 @@ namespace BlendoBot {
 		/// <param name="sender"></param>
 		/// <param name="guildId"></param>
 		/// <returns></returns>
-		public T GetCommand<T>(object sender, ulong guildId) where T : CommandBase {
+		public T GetCommand<T>(object sender, ulong guildId) where T : BaseCommand {
 			if (GuildCommands.ContainsKey(guildId)) {
 				return GuildCommands[guildId].FirstOrDefault(c => c.Value is T).Value as T;
 			}
@@ -278,14 +282,14 @@ namespace BlendoBot {
 			return GetCommand<Help>(this, guildId).Term;
 		}
 
-		public string GetCommandInstanceDataPath(object sender, CommandBase command) {
+		public string GetCommandInstanceDataPath(object sender, BaseCommand command) {
 			if (!Directory.Exists(Path.Combine(Path.Combine("data", command.GuildId.ToString()), command.Name))) {
 				Directory.CreateDirectory(Path.Combine(Path.Combine("data", command.GuildId.ToString()), command.Name));
 			}
 			return Path.Combine(Path.Combine("data", command.GuildId.ToString()), command.Name);
 		}
 
-		public string GetCommandCommonDataPath(object sender, CommandBase command) {
+		public string GetCommandCommonDataPath(object sender, BaseCommand command) {
 			if (!Directory.Exists(Path.Combine(Path.Combine("data", "common"), command.Name))) {
 				Directory.CreateDirectory(Path.Combine(Path.Combine("data", "common"), command.Name));
 			}
@@ -444,7 +448,7 @@ namespace BlendoBot {
 		public async Task<bool> AddCommand(object _, ulong guildId, string commandClassName) {
 			var commandType = LoadedCommands[commandClassName];
 			try {
-				var commandInstance = Activator.CreateInstance(commandType, new object[] { guildId, this }) as CommandBase;
+				var commandInstance = Activator.CreateInstance(commandType, new object[] { guildId, this }) as BaseCommand;
 				if (await commandInstance.Startup()) {
 					GuildCommands[guildId].Add(commandInstance.Term, commandInstance);
 					Log(this, new LogEventArgs {
@@ -513,7 +517,7 @@ namespace BlendoBot {
 
 			foreach (string dll in dlls) {
 				var assembly = Assembly.LoadFrom(dll);
-				var types = assembly.ExportedTypes.ToList().FindAll(t => t.IsSubclassOf(typeof(CommandBase)));
+				var types = assembly.ExportedTypes.ToList().FindAll(t => t.IsSubclassOf(typeof(BaseCommand)));
 				foreach (var type in types) {
 					LoadedCommands.Add(type.FullName, type);
 					Log(this, new LogEventArgs {
@@ -528,7 +532,7 @@ namespace BlendoBot {
 			if (GuildCommands.ContainsKey(guildId)) {
 				return;
 			} else {
-				GuildCommands.Add(guildId, new Dictionary<string, CommandBase>());
+				GuildCommands.Add(guildId, new Dictionary<string, BaseCommand>());
 			}
 			if (GuildMessageListeners.ContainsKey(guildId)) {
 				GuildMessageListeners[guildId].Clear();
@@ -537,7 +541,7 @@ namespace BlendoBot {
 			}
 
 			var adminCommand = new Admin(guildId, this);
-			var systemCommands = new CommandBase[] { adminCommand, new Help(guildId, this), new About(guildId, this) };
+			var systemCommands = new BaseCommand[] { adminCommand, new Help(guildId, this), new About(guildId, this) };
 
 			foreach (var command in systemCommands) {
 				await command.Startup();
@@ -555,7 +559,7 @@ namespace BlendoBot {
 			foreach (var commandType in LoadedCommands.Values) {
 				if (!adminCommand.IsCommandNameDisabled(commandType.FullName)) {
 					try {
-						var commandInstance = Activator.CreateInstance(commandType, new object[] { guildId, this }) as CommandBase;
+						var commandInstance = Activator.CreateInstance(commandType, new object[] { guildId, this }) as BaseCommand;
 						if (await commandInstance.Startup()) {
 							commandInstance.Term = adminCommand.RenameCommandTermFromDatabase(commandInstance);
 							GuildCommands[guildId].Add(commandInstance.Term, commandInstance);
@@ -590,6 +594,26 @@ namespace BlendoBot {
 		}
 		private static bool IsAlphabetical(char c) {
 			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+		}
+
+		public string ReadConfigOrDefault(object o, string configHeader, string configKey, string defaultValue) {
+			throw new NotImplementedException();
+		}
+
+		public bool DoesConfigKeyExist(object o, string configHeader, string configKey) {
+			throw new NotImplementedException();
+		}
+
+		public string GetCommandTerm(object o, BaseCommand command) {
+			throw new NotImplementedException();
+		}
+
+		public BaseCommand GetCommandByTerm(object o, ulong guildId, string term) {
+			throw new NotImplementedException();
+		}
+
+		public BaseCommand GetCommandByGuid(object o, ulong guildId, string guid) {
+			throw new NotImplementedException();
 		}
 	}
 }

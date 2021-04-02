@@ -1,4 +1,7 @@
-﻿using BlendoBotLib;
+﻿using BlendoBot.Commands;
+using BlendoBot.Core.Command;
+using BlendoBot.Core.Entities;
+using BlendoBot.Core.Utility;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
@@ -9,8 +12,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BlendoBot.Commands.Admin {
-	public class Admin : CommandBase {
+namespace BlendoBot.Frontend.Commands.Admin {
+	[Command(Guid = "blendobot.frontend.commands.admin", Name = "Admin", Author = "Biendeo", DefaultTerm = "admin")]
+	public class Admin : BaseCommand {
 		public Admin(ulong guildId, Program program) : base(guildId, program) {
 			this.program = program;
 			disabledCommands = new List<DisabledCommand>();
@@ -19,8 +23,6 @@ namespace BlendoBot.Commands.Admin {
 			OtherSettings = new OtherSettings();
 		}
 
-		public override string DefaultTerm => "?admin";
-		public override string Name => "Admin";
 		public override string Description => "Does admin stuff, but only if you are either an administrator of the server, or if you've been granted permission!";
 		public override string Usage => $"Usage:\n" +
 			$"({"All of these commands are only accessible if you are either an administrator role on this Discord guild, or if you have been added to this admin list!".Italics()})\n" +
@@ -34,8 +36,6 @@ namespace BlendoBot.Commands.Admin {
 			$"{$"{Term} command unknownprefix".Code()} ({"Lists the current prefix used for the unknown command message".Italics()})\n" +
 			$"{$"{Term} command unknownprefix [prefix]".Code()} ({"Changes the prefix used for the unkown command message".Italics()})\n" +
 			$"{$"{Term} command unknowntoggle".Code()} ({"Toggles whether the unknown command message appears".Italics()})";
-		public override string Author => "Biendeo";
-		public override string Version => "2.1.0";
 
 		private readonly Program program;
 
@@ -44,10 +44,9 @@ namespace BlendoBot.Commands.Admin {
 		private List<DiscordUser> administrators;
 		private OtherSettings OtherSettings;
 
-		public override async Task<bool> Startup() {
+		public override Task<bool> Startup() {
 			LoadData();
-			await Task.Delay(0);
-			return true;
+			return Task.FromResult(true);
 		}
 
 		public override async Task OnMessage(MessageCreateEventArgs e) {
@@ -277,12 +276,12 @@ namespace BlendoBot.Commands.Admin {
 			}
 		}
 
-		public void StoreRenamedCommand(CommandBase command, string newTerm) {
+		public void StoreRenamedCommand(BaseCommand command, string newTerm) {
 			renamedCommands.Add(new RenamedCommand(newTerm, command.GetType().FullName));
 			SaveData();
 		}
 
-		public string RenameCommandTermFromDatabase(CommandBase command) {
+		public string RenameCommandTermFromDatabase(BaseCommand command) {
 			var renamedCommand = renamedCommands.Find(c => c.ClassName == command.GetType().FullName);
 			if (renamedCommand == null) {
 				string targetTerm = command.DefaultTerm.ToLower();
