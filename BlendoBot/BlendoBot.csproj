@@ -16,18 +16,4 @@
     <PackageReference Include="Salaros.ConfigParser" Version="0.3.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\BlendoBotLib\BlendoBotLib.csproj" />
-    <ProjectReference Include="..\Modules\AutoCorrect\AutoCorrect.csproj" />
-    <ProjectReference Include="..\Modules\CurrencyConverter\CurrencyConverter.csproj" />
-    <ProjectReference Include="..\Modules\DecimalSpiral\DecimalSpiral.csproj" />
-    <ProjectReference Include="..\Modules\MrPing\MrPing.csproj" />
-    <ProjectReference Include="..\Modules\RegionalIndicator\RegionalIndicator.csproj" />
-    <ProjectReference Include="..\Modules\RemindMe\RemindMe.csproj" />
-    <ProjectReference Include="..\Modules\Roll\Roll.csproj" />
-    <ProjectReference Include="..\Modules\UserTimeZone\UserTimeZone.csproj" />
-    <ProjectReference Include="..\Modules\Weather\Weather.csproj" />
-    <ProjectReference Include="..\Modules\WheelOfFortune\WheelOfFortune.csproj" />
-  </ItemGroup>
-
 </Project>
