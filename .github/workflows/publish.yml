@@ -1,0 +1,26 @@
+name: Publish to NuGet
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  publish:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '5.0.x'
+
+      - name: Publish NuGet Package
+        id: publish_nuget
+        uses: rohith/publish-nuget@v2
+        with:
+          PROJECT_FILE_PATH: BlendoBot.Frontend/BlendoBot.Frontend.csproj
+          VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
+          NUGET_KEY: ${{secrets.NUGET_KEY}}
+          TAG_COMMIT: false
