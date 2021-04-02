@@ -12,13 +12,13 @@ namespace BlendoBot.Commands {
 	/// </summary>
 	[Command(Guid = "blendobot.frontend.commands.help", Name = "Help", Author = "Biendeo", DefaultTerm = "help")]
 	public class Help : BaseCommand {
-		public Help(ulong guildId, Program program) : base(guildId, program) {
+		public Help(ulong guildId, BlendoBot program) : base(guildId, program) {
 			this.program = program;
 		}
 		public override string Description => "Posts what commands this bot can do, and additional help on how to use a command.";
 		public override string Usage => $"Use {Term.Code()} to see a list of all commands on the server.\nUse {$"{Term} [command]".Code()} to see help on a specific command, but you probably already know how to do that!";
 
-		private readonly Program program;
+		private readonly BlendoBot program;
 
 		public override Task<bool> Startup() {
 			return Task.FromResult(true);

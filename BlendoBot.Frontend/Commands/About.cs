@@ -13,14 +13,14 @@ namespace BlendoBot.Frontend.Commands {
 	/// </summary>
 	[Command(Guid = "blendobot.frontend.commands.about", Name = "About", Author = "Biendeo", DefaultTerm = "about")]
 	public class About : BaseCommand {
-		public About(ulong guildId, Program program) : base(guildId, program) {
+		public About(ulong guildId, BlendoBot program) : base(guildId, program) {
 			this.program = program;
 		}
 
 		public override string Description => "Posts information about this version of the bot, or of any loaded module. You probably already know how to use this command by now.";
 		public override string Usage => $"Use {Term.Code()} to see the information about the bot.\nUse {$"{Term} [command]".Code()} to see information about another command.";
 
-		private readonly Program program;
+		private readonly BlendoBot program;
 
 		public override Task<bool> Startup() {
 			return Task.FromResult(true);

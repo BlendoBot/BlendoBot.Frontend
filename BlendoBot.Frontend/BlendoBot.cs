@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using System.Timers;
 
 namespace BlendoBot {
-	public class Program : IBotMethods {
+	public class BlendoBot : IBotMethods {
 		private DiscordClient DiscordClient { get; set; }
 		private string ConfigPath { get; }
 		public Config Config { get; private set; }
@@ -34,12 +34,7 @@ namespace BlendoBot {
 
 		private int ClientRestarts { get; set; }
 
-		public static void Main(string[] args) {
-			var program = new Program("config.cfg");
-			program.Start(args).ConfigureAwait(false).GetAwaiter().GetResult();
-		}
-
-		public Program(string configPath) {
+		public BlendoBot(string configPath) {
 			ConfigPath = configPath;
 			LoadedCommands = new Dictionary<string, Type>();
 			GuildCommands = new Dictionary<ulong, Dictionary<string, BaseCommand>>();

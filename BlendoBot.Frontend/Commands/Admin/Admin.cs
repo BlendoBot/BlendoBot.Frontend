@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 namespace BlendoBot.Frontend.Commands.Admin {
 	[Command(Guid = "blendobot.frontend.commands.admin", Name = "Admin", Author = "Biendeo", DefaultTerm = "admin")]
 	public class Admin : BaseCommand {
-		public Admin(ulong guildId, Program program) : base(guildId, program) {
+		public Admin(ulong guildId, BlendoBot program) : base(guildId, program) {
 			this.program = program;
 			disabledCommands = new List<DisabledCommand>();
 			renamedCommands = new List<RenamedCommand>();
@@ -37,7 +37,7 @@ namespace BlendoBot.Frontend.Commands.Admin {
 			$"{$"{Term} command unknownprefix [prefix]".Code()} ({"Changes the prefix used for the unkown command message".Italics()})\n" +
 			$"{$"{Term} command unknowntoggle".Code()} ({"Toggles whether the unknown command message appears".Italics()})";
 
-		private readonly Program program;
+		private readonly BlendoBot program;
 
 		private List<DisabledCommand> disabledCommands;
 		private List<RenamedCommand> renamedCommands;
