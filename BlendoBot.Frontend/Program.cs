@@ -85,7 +85,7 @@ namespace BlendoBot {
 			});
 
 			StartTime = DateTime.Now;
-			LogFile = Path.Join("log", $"{StartTime.ToString("yyyyMMddHHmmss")}.log");
+			LogFile = Path.Join("log", $"{StartTime:yyyyMMddHHmmss}.log");
 
 			DiscordClient.Ready += DiscordReady;
 			DiscordClient.MessageCreated += DiscordMessageCreated;
@@ -201,13 +201,11 @@ namespace BlendoBot {
 
 		public void Log(object sender, LogEventArgs e) {
 			string typeString = Enum.GetName(typeof(LogType), e.Type);
-			string logMessage = $"[{typeString}] ({DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")}) [{sender?.GetType().FullName ?? "null"}] | {e.Message}";
+			string logMessage = $"[{typeString}] ({DateTime.Now:yyyy-MM-dd HH:mm:ss}) [{sender?.GetType().FullName ?? "null"}] | {e.Message}";
 			Console.WriteLine(logMessage);
 			if (!Directory.Exists("log")) Directory.CreateDirectory("log");
-			using (var logStream = File.Open(LogFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)) {
-				using var writer = new StreamWriter(logStream);
-				writer.WriteLine(logMessage);
-			}
+			using var logStream = File.Open(LogFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite); using var writer = new StreamWriter(logStream);
+			writer.WriteLine(logMessage);
 		}
 		public string ReadConfig(object o, string configHeader, string configKey) {
 			return Config.ReadString(o, configHeader, configKey);
@@ -589,11 +587,8 @@ namespace BlendoBot {
 
 			Log(this, new LogEventArgs {
 				Type = LogType.Log,
-				Message = $"All modules have finished loading for guild {guildId.ToString()}"
+				Message = $"All modules have finished loading for guild {guildId}"
 			});
-		}
-		private static bool IsAlphabetical(char c) {
-			return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 		}
 
 		public string ReadConfigOrDefault(object o, string configHeader, string configKey, string defaultValue) {

@@ -44,7 +44,7 @@ namespace BlendoBot.Commands {
 			} else {
 				// This block runs if the ?help is run with an argument. The relevant command is searched and its usage
 				// is printed out, or an error message if that command doesn't exist.
-				string specifiedCommand = e.Message.Content.Substring(Term.Length + 1);
+				string specifiedCommand = e.Message.Content[(Term.Length + 1)..];
 				var command = program.GetCommand(this, GuildId, specifiedCommand);
 				if (command == null) {
 					await BotMethods.SendMessage(this, new SendMessageEventArgs {
