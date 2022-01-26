@@ -15,12 +15,16 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
+          source-url: https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json
+        env:
+          NUGET_AUTH_TOKEN: ${{ github.token }}
 
       - name: Publish NuGet Package
         id: publish_nuget
-        uses: rohith/publish-nuget@v2
-        with:
-          PROJECT_FILE_PATH: BlendoBot.Frontend/BlendoBot.Frontend.csproj
-          VERSION_REGEX: ^\s*<Version>(.*)<\/Version>\s*$
-          NUGET_KEY: ${{secrets.NUGET_KEY}}
-          TAG_COMMIT: false
+        shell: pwsh
+        run: |
+          dotnet restore
+          dotnet pack --configuration Release
+          dotnet nuget list source
+          (Get-ChildItem -Recurse -Filter "*.nupkg")[0].FullName
+          dotnet nuget push ((Get-ChildItem -Recurse -Filter "*.nupkg")[0].FullName) --api-key "${{ github.token }}" --source "github.blendobot"
