@@ -45,7 +45,7 @@ internal class AdminCommand : ICommand {
 	};
 
 	public async Task OnMessage(MessageCreateEventArgs e, string[] tokenizedMessage) {
-		if (!await module.DiscordInteractor.IsUserAdmin(this, e.Guild, e.Channel, e.Author)) {
+		if (!await module.AdminRepository.IsUserAdmin(this, e.Guild, e.Channel, e.Author)) {
 			await module.DiscordInteractor.Send(this, new SendEventArgs {
 				Message = $"Only administrators can use {$"{module.ModuleManager.GetCommandTermWithPrefix(this)}".Code()}!",
 				Channel = e.Channel,
