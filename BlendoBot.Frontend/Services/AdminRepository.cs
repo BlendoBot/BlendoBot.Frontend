@@ -20,7 +20,7 @@ internal class AdminRepository : IAdminRepository {
 
 	public Task<bool> IsUserAdmin(object o, DiscordGuild guild, DiscordChannel channel, DiscordUser user) {
 		using BlendoBotDbContext dbContext = BlendoBotDbContext.Get();
-		return Task.FromResult(IsUserBlendoBotAdmin(guild.Id, user.Id).Result || IsUserAdmin(o, guild, channel, user).Result);
+		return Task.FromResult(IsUserBlendoBotAdmin(guild.Id, user.Id).Result || discordInteractor.IsUserAdmin(o, guild, channel, user).Result);
 	}
 
 	internal Task<bool> IsUserBlendoBotAdmin(ulong guildId, ulong userId) {
