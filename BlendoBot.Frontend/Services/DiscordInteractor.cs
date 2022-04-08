@@ -213,7 +213,7 @@ internal class DiscordInteractor : IDiscordInteractor {
 	public async Task<DiscordMessage> Send(object o, SendEventArgs e) {
 		StringBuilder messageContentBuilder = new();
 		logger.Log(o, new LogEventArgs {
-			Type = LogType.Log,
+			Type = e.Exception == null ? LogType.Log : LogType.Error,
 			Message = $"Sending message {e.Tag} to channel #{e.Channel.Name} ({e.Channel.Guild.Name})"
 		});
 		DiscordMessageBuilder messageBuilder = new();
