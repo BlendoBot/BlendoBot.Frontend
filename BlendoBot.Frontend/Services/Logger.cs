@@ -2,6 +2,7 @@
 using BlendoBot.Core.Services;
 using System;
 using System.IO;
+using System.Threading;
 
 namespace BlendoBot.Frontend.Services;
 
@@ -18,30 +19,46 @@ internal class Logger : ILogger {
 		LogFilePath = Path.Join("log", $"{startTime:yyyyMMddHHmmss}.log");
 	}
 
+	private int numReadErrors = 0;
+	private const int MAX_READ_ATTEMPTS = 20;
+
 	public void Log(object o, LogEventArgs e) {
-		string typeString = Enum.GetName(typeof(LogType), e.Type);
-		string logMessage = $"({DateTime.Now:yyyy-MM-dd HH:mm:ss}) [{o?.GetType().FullName ?? "null"}] | {e.Message}";
-		ConsoleColor oldForegroundColor = Console.ForegroundColor;
-		switch (e.Type) {
-			case LogType.Error:
+		int attempts = 0;
+		bool success = false;
+		while (!success && attempts < MAX_READ_ATTEMPTS) {
+			string typeString = Enum.GetName(typeof(LogType), e.Type);
+			string logMessage = $"({DateTime.Now:yyyy-MM-dd HH:mm:ss}) [{o?.GetType().FullName ?? "null"}] | {e.Message}";
+			ConsoleColor oldForegroundColor = Console.ForegroundColor;
+			switch (e.Type) {
+				case LogType.Error:
+					Console.ForegroundColor = ConsoleColor.Red;
+					break;
+				case LogType.Log:
+					Console.ForegroundColor = ConsoleColor.Cyan;
+					break;
+				case LogType.Warning:
+					Console.ForegroundColor = ConsoleColor.Yellow;
+					break;
+				case LogType.Critical:
+					Console.ForegroundColor = ConsoleColor.DarkRed;
+					break;
+			}
+			Console.Write($"[{typeString}] ");
+			Console.ForegroundColor = oldForegroundColor;
+			Console.WriteLine(logMessage);
+			if (!Directory.Exists("log")) Directory.CreateDirectory("log");
+
+			try {
+				using FileStream logStream = File.Open(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+				using StreamWriter writer = new(logStream);
+				writer.WriteLine($"[{typeString}] {logMessage}");
+				success = true;
+			} catch (IOException) {
 				Console.ForegroundColor = ConsoleColor.Red;
-				break;
-			case LogType.Log:
-				Console.ForegroundColor = ConsoleColor.Cyan;
-				break;
-			case LogType.Warning:
-				Console.ForegroundColor = ConsoleColor.Yellow;
-				break;
-			case LogType.Critical:
-				Console.ForegroundColor = ConsoleColor.DarkRed;
-				break;
+				Console.WriteLine($"Couldn't open the logfile. This has now happend {++numReadErrors} times.");
+				Console.ForegroundColor = oldForegroundColor;
+				Thread.Sleep(5);
+			}
 		}
-		Console.Write($"[{typeString}] ");
-		Console.ForegroundColor = oldForegroundColor;
-		Console.WriteLine(logMessage);
-		if (!Directory.Exists("log")) Directory.CreateDirectory("log");
-		using FileStream logStream = File.Open(LogFilePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-		using StreamWriter writer = new(logStream);
-		writer.WriteLine($"[{typeString}] {logMessage}");
 	}
 }
